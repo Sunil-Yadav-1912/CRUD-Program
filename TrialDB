@@ -138,3 +138,200 @@ GO
  
 ALTER DATABASE [TrialDB] SET  READ_WRITE
 GO
+
+USE [TrialDB]
+GO
+ 
+/****** Object:  Table [dbo].[Course]  Script Date: 20-11-2016 03:57:30 PM ******/
+SET ANSI_NULLS ON
+GO
+ 
+SET QUOTED_IDENTIFIER ON
+GO
+ 
+CREATE TABLE [dbo].[Course](
+ [CourseID] [int] NOT NULL,
+ [CourseName] [nvarchar](50) NOT NULL,
+ [CourseDescription] [nvarchar](100) NULL,
+ CONSTRAINT [PK_Course] PRIMARY KEY CLUSTERED
+(
+ [CourseID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+ 
+GO
+[/sql]
+ 
+Now we can insert few data to our newly created table.
+ 
+[sql]
+USE [TrialDB]
+GO
+ 
+INSERT INTO [dbo].[Course]
+ ([CourseID]
+ ,[CourseName]
+ ,[CourseDescription])
+ VALUES
+ (1
+ ,'C#'
+ ,'Learn C# in 7 days')
+ INSERT INTO [dbo].[Course]
+ ([CourseID]
+ ,[CourseName]
+ ,[CourseDescription])
+ VALUES
+ (2
+ ,'Asp.Net'
+ ,'Learn Asp.Net in 7 days')
+INSERT INTO [dbo].[Course]
+ ([CourseID]
+ ,[CourseName]
+ ,[CourseDescription])
+ VALUES
+ (3
+ ,'SQL'
+ ,'Learn SQL in 7 days')
+INSERT INTO [dbo].[Course]
+ ([CourseID]
+ ,[CourseName]
+ ,[CourseDescription])
+ VALUES
+ (4
+ ,'JavaScript'
+ ,'Learn JavaScript in 7 days')
+GO
+//MSSQL Instance Creation
+var sqlInstance = require("mssql");
+Then, you can set the database configurations as preceding.
+
+//Database configuration
+var setUp = {
+ server: 'localhost',
+ database: 'TrialDB',
+ user: 'sa',
+ password: 'sa',
+ port: 1433
+};
+sqlInstance.connect(setUp)
+// To retrieve all the data - Start
+ new sqlInstance.Request()
+ .query("select * from Course")
+ .then(function (dbData) {
+ if (dbData == null || dbData.length === 0)
+ return;
+ console.dir('All the courses');
+ console.dir(dbData);
+ })
+ .catch(function (error) {
+ console.dir(error);
+ });
+ // To retrieve all the data - End
+ // To retrieve specific data - Start
+ var value = 2;
+ new sqlInstance.Request()
+ .input("param", sqlInstance.Int, value)
+ .query("select * from Course where CourseID = @param")
+ .then(function (dbData) {
+ if (dbData == null || dbData.length === 0)
+ return;
+ console.dir('Course with ID = 2');
+ console.dir(dbData);
+ })
+ .catch(function (error) {
+ console.dir(error);
+ });
+ // To retrieve specific data - End
+ // Insert data - Start
+ var dbConn = new sqlInstance.Connection(setUp,
+ function (err) {
+ var myTransaction = new sqlInstance.Transaction(dbConn);
+ myTransaction.begin(function (error) {
+ var rollBack = false;
+ myTransaction.on('rollback',
+ function (aborted) {
+ rollBack = true;
+ });
+ new sqlInstance.Request(myTransaction)
+ .query("INSERT INTO [dbo].[Course] ([CourseName],[CourseDescription]) VALUES ('Node js', 'Learn Node JS in 7 days')",
+ function (err, recordset) {
+ if (err) {
+ if (!rollBack) {
+ myTransaction.rollback(function (err) {
+ console.dir(err);
+ });
+ }
+ } else {
+ myTransaction.commit().then(function (recordset) {
+ console.dir('Data is inserted successfully!');
+ }).catch(function (err) {
+ console.dir('Error in transaction commit ' + err);
+ });
+ }
+ });
+ });
+ });
+ // Insert data - End
+ // Delete data - Start
+ var delValue = 4;
+ var dbConn = new sqlInstance.Connection(setUp,
+ function (err) {
+ var myTransaction = new sqlInstance.Transaction(dbConn);
+ myTransaction.begin(function (error) {
+ var rollBack = false;
+ myTransaction.on('rollback',
+ function (aborted) {
+ rollBack = true;
+ });
+ new sqlInstance.Request(myTransaction)
+ .query("DELETE FROM [dbo].[Course] WHERE CourseID=" + delValue,
+ function (err, recordset) {
+ if (err) {
+ if (!rollBack) {
+ myTransaction.rollback(function (err) {
+ console.dir(err);
+ });
+ }
+ } else {
+ myTransaction.commit().then(function (recordset) {
+ console.dir('Data is deleted successfully!');
+ }).catch(function (err) {
+ console.dir('Error in transaction commit ' + err);
+ });
+ }
+ });
+ });
+ });
+ // Delete data - End
+ // Update data - Start
+ var updValue = 3;
+ var dbConn = new sqlInstance.Connection(setUp,
+ function (err) {
+ var myTransaction = new sqlInstance.Transaction(dbConn);
+ myTransaction.begin(function (error) {
+ var rollBack = false;
+ myTransaction.on('rollback',
+ function (aborted) {
+ rollBack = true;
+ });
+ new sqlInstance.Request(myTransaction)
+ .query("UPDATE [dbo].[Course] SET [CourseName] = 'Test' WHERE CourseID=" + updValue,
+ function (err, recordset) {
+ if (err) {
+ if (!rollBack) {
+ myTransaction.rollback(function (err) {
+ console.dir(err);
+ });
+ }
+ } else {
+ myTransaction.commit().then(function (recordset) {
+ console.dir('Data is updated successfully!');
+ }).catch(function (err) {
+ console.dir('Error in transaction commit ' + err);
+ });
+ }
+ });
+ });
+ });
+ // Update data - End
+ 
